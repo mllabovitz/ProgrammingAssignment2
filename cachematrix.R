@@ -3,13 +3,70 @@
 
 ## Write a short comment describing this function
 
-makeCacheMatrix <- function(x = matrix()) {
 
+# makeCacheMatrix is a function which acts to store (cache) and get a square invertible
+# matrix and its inverse and create an object (list) which can contain these results.
+# contains a number of methods for the matrix object which perform the storage and retrieval.
+# The object and methods may be accessed by the cacheSolve function
+
+makeCacheMatrix <- function(X = matrix()) { # input is set-up to be a matrix
+  Xi <- NULL  # set the matrix inverse to NULL each time makeCacheMatrix is called
+  
+  # X is the square invertible matrix which is an assumption of the assignment
+  # Xi is the inverse of X
+  # Definition of Xi is a matrix such Xi%*%X = X%*%Xi = I
+  # Where I is the identity matrix
+  
+  set <- function(Y) { # function sets X and resets the inverse to NULL
+                       X <<- Y
+                       Xi <<- NULL
+  }
+  get <- function() X  # this function returns the value of the input matrix
+  
+  setinverse <- function(inverse) Xi <<- inverse  # this is called by cacheSolve() on the first call to cacheSolve()
+  #  it will store the inverse using assignment in list
+  getinverse <- function() Xi  # this will return the cached value of inverse to cacheSolve() on repated accesses
+  
+  list(set = set, get = get, # set stores the X matrix,  get accesses the X matris
+       setinverse = setinverse, # Called first access cacheSolve for a given X and stores the inverse
+       getinverse = getinverse) # called on subsequent access of cacheSolve for a given X and gets inverse
 }
+
 
 
 ## Write a short comment describing this function
 
-cacheSolve <- function(x, ...) {
-        ## Return a matrix that is the inverse of 'x'
+# cacheSolve function operates on an object created by makeCacheMatrix
+# The object consists of a square invertible matrix and
+# potentially its inverse
+
+# The function retrieves the inverse and determines if the inverse has been computed.
+# If so it returns the inverse to the calling code.
+# If not it computes and store the inverse in the object created by
+# makeCacheMatrix and also returns the inverse to the calling code.
+# On subsequent calls to cacheSolve with the same object as an argument
+# if the object has not been otherwise manipulated the inverse will be available
+# without the need to be recomputed.
+#
+
+cacheSolve <- function(B, ...) { # B is an object which contains both a square invertible matrix (invertibility is an assumption of the assignment)
+                                 # and the inverse of the matrix
+  
+  # if data  is the square invertible matrix
+  # and dataInv  is the inverse of data
+  # Then we define dataInv as a matrix such that dataInv%*%data = data%*%dataInv = I
+  # Where I is the identity matrix
+  
+  dataInv <- B$getinverse()  # accesses the matrix X and  the value of the inverse matrix Xi in the 
+                             # makeCacheMatrix function
+  if(!is.null(dataInv)) { # determine if dataInv was already cached (not-NULL)
+    message("getting cached inverse matrix") # if so print a messeage
+    return(dataInv) # return the not-NULL
+  }
+  # Flow comes here only if the B$getinverse() returns a NULL for Xi
+  data <- B$get()  # retrieve matrix X
+  dataInv <- solve(data) # Compute the inverse
+  B$setinverse(dataInv) # cache the inverse
+  dataInv # return inverse to calling code
 }
+
